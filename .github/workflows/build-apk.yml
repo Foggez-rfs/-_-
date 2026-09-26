@@ -42,12 +42,28 @@ jobs:
         working-directory: mobile
         run: flutter pub get
 
-      - name: Build APK
+      - name: Build RELEASE APK
         working-directory: mobile
         run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Upload APK
+      - name: Build DEBUG APK
+        working-directory: mobile
+        run: flutter build apk --debug
+
+      - name: Rename APKs
+        working-directory: mobile
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/moe-delo-release.apk
+          cp build/app/outputs/flutter-apk/app-debug.apk build/app/outputs/flutter-apk/moe-delo-debug.apk
+
+      - name: Upload RELEASE APK
         uses: actions/upload-artifact@v4
         with:
-          name: moe-delo-apk
-          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          name: moe-delo-release-apk
+          path: mobile/build/app/outputs/flutter-apk/moe-delo-release.apk
+
+      - name: Upload DEBUG APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: moe-delo-debug-apk
+          path: mobile/build/app/outputs/flutter-apk/moe-delo-debug.apk
