@@ -13,7 +13,7 @@ import (
 
 type RegisterInput struct {
 	Phone     string `json:"phone" binding:"required"`
-	Password  string `json:"password" binding:"required,min=6"`
+	Password  string `json:"password" binding:"required,min=4"`
 	Role      string `json:"role" binding:"required,oneof=customer executor"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`

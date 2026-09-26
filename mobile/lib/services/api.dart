@@ -5,31 +5,38 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Клиент к бэкенду «Моё дело».
-/// Все методы возвращают {ok: bool, data: {...}} или {ok: false, error: '...'}.
 class Api {
-  /// 127.0.0.1 работает, если бэкенд запущен на том же устройстве (Termux).
-  /// Если API на другом устройстве — замени на IP (например 192.168.1.5).
   static const String baseUrl = 'http://127.0.0.1:8080';
   static const Duration _timeout = Duration(seconds: 8);
 
   static String? _token;
+  static String? _role;
 
-  static Future<void> saveToken(String token) async {
+  static Future<void> saveToken(String token, {String? role}) async {
     _token = token;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
+    if (role != null) {
+      _role = role;
+      await prefs.setString('role', role);
+    }
   }
 
   static Future<String?> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('token');
+    _role = prefs.getString('role');
     return _token;
   }
 
+  static String? getRole() => _role;
+
   static Future<void> logout() async {
     _token = null;
+    _role = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
+    await prefs.remove('role');
   }
 
   static Map<String, String> get _headers => {
@@ -37,7 +44,6 @@ class Api {
     if (_token != null) 'Authorization': 'Bearer $_token',
   };
 
-  // -------- AUTH --------
   static Future<Map<String, dynamic>> register({
     required String phone,
     required String password,
@@ -59,7 +65,6 @@ class Api {
     return _post('/auth/login', {'phone': phone, 'password': password});
   }
 
-  // -------- ORDERS --------
   static Future<Map<String, dynamic>> createOrder({
     required String description,
     required String address,
@@ -86,23 +91,18 @@ class Api {
     return _post('/api/orders/$id/accept', {});
   }
 
-  // -------- PRIVATE --------
   static Future<Map<String, dynamic>> _post(String path, Map<String, dynamic> body) async {
     try {
       final res = await http
-          .post(Uri.parse('$baseUrl$path'),
-                headers: _headers,
-                body: jsonEncode(body))
+          .post(Uri.parse('$baseUrl$path'), headers: _headers, body: jsonEncode(body))
           .timeout(_timeout);
       return _handle(res);
     } on TimeoutException {
-      return {'ok': false, 'error': 'Сервер долго не отвечает. Он точно запущен?'};
+      return {'ok': false, 'error': 'Сервер не отвечает. Он запущен?'};
     } on SocketException catch (e) {
-      return {'ok': false, 'error': 'Нет связи с сервером: ${e.osError?.message ?? e.message}'};
-    } on FormatException {
-      return {'ok': false, 'error': 'Сервер вернул некорректный ответ'};
+      return {'ok': false, 'error': 'Нет связи: ${e.osError?.message ?? e.message}'};
     } catch (e) {
-      return {'ok': false, 'error': 'Неизвестная ошибка: $e'};
+      return {'ok': false, 'error': 'Ошибка: $e'};
     }
   }
 
@@ -113,7 +113,7 @@ class Api {
           .timeout(_timeout);
       return _handle(res);
     } on TimeoutException {
-      return {'ok': false, 'error': 'Сервер долго не отвечает'};
+      return {'ok': false, 'error': 'Сервер не отвечает'};
     } on SocketException catch (e) {
       return {'ok': false, 'error': 'Нет связи: ${e.osError?.message ?? e.message}'};
     } catch (e) {

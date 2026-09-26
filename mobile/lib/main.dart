@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+
+import 'services/api.dart';
 import 'screens/login_screen.dart';
+import 'screens/customer_screen.dart';
+import 'screens/executor_screen.dart';
 
 void main() => runApp(const MoeDeloApp());
 
@@ -22,7 +26,24 @@ class _MoeDeloAppState extends State<MoeDeloApp> {
       themeMode: _darkMode ? ThemeMode.dark : ThemeMode.light,
       theme: _buildTheme(Brightness.light),
       darkTheme: _buildTheme(Brightness.dark),
-      home: LoginScreen(onToggleTheme: toggleTheme),
+      home: FutureBuilder<String?>(
+        future: Api.loadToken(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final token = snapshot.data;
+          final role = Api.getRole();
+          if (token != null && role != null) {
+            return role == 'executor'
+                ? const ExecutorScreen()
+                : const CustomerScreen();
+          }
+          return LoginScreen(onToggleTheme: toggleTheme);
+        },
+      ),
     );
   }
 

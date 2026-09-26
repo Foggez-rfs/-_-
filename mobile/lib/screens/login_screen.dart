@@ -3,8 +3,6 @@ import '../services/api.dart';
 import 'customer_screen.dart';
 import 'executor_screen.dart';
 
-/// Экран входа/регистрации.
-/// Дизайн для пожилых: крупные элементы, контраст, простые подписи.
 class LoginScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
   const LoginScreen({super.key, required this.onToggleTheme});
@@ -21,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRegister = false;
   bool _loading = false;
   String? _error;
-  bool _obscurePassword = true;
+  bool _obscure = true;
 
   @override
   void dispose() {
@@ -48,18 +46,24 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = false);
 
     if (res['ok'] == true) {
-      final data = res['data'];
+      final data = res['data'] as Map<String, dynamic>;
       final token = data['token'] as String?;
       if (token == null) {
         setState(() => _error = 'Сервер не вернул токен');
         return;
       }
-      await Api.saveToken(token);
+
+      // ⚠️ Берём роль ОТ СЕРВЕРА — это фикс бага "исполнитель → заказчик"
+      final serverRole = (data['role'] as String?) ??
+          (_isRegister ? _role : 'customer');
+
+      await Api.saveToken(token, role: serverRole);
       if (!mounted) return;
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => _role == 'executor'
+          builder: (_) => serverRole == 'executor'
               ? const ExecutorScreen()
               : const CustomerScreen(),
         ),
@@ -94,31 +98,18 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 12),
-
-              // Логотип
               Icon(Icons.handshake, size: 96, color: primary),
               const SizedBox(height: 12),
-
-              Text(
-                'Помощь рядом',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: primary,
-                ),
-              ),
+              Text('Помощь рядом',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: primary)),
               const SizedBox(height: 6),
-
               Text(
                 _isRegister ? 'Создайте новый аккаунт' : 'Войдите, чтобы продолжить',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
-                ),
+                style: TextStyle(fontSize: 16,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6)),
               ),
-
               const SizedBox(height: 32),
 
               _Field(
@@ -135,11 +126,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _password,
                 label: 'Пароль',
                 icon: Icons.lock_outline,
-                obscure: _obscurePassword,
+                obscure: _obscure,
                 primary: primary,
                 suffix: IconButton(
-                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () => setState(() => _obscure = !_obscure),
                 ),
               ),
 
@@ -152,21 +143,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   primary: primary,
                 ),
                 const SizedBox(height: 24),
-
-                Text(
-                  'Кто вы?',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
+                Text('Кто вы?',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface)),
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    Expanded(child: _roleCard('Заказчик', 'Нужна помощь', Icons.elderly, 'customer', primary, accent)),
+                    Expanded(child: _roleCard('Заказчик', 'Нужна помощь',
+                        Icons.elderly, 'customer', primary)),
                     const SizedBox(width: 12),
-                    Expanded(child: _roleCard('Исполнитель', 'Хочу помочь', Icons.engineering, 'executor', primary, accent)),
+                    Expanded(child: _roleCard('Исполнитель', 'Хочу помочь',
+                        Icons.engineering, 'executor', primary)),
                   ],
                 ),
               ],
@@ -186,15 +173,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: _loading
                       ? const SizedBox(height: 26, width: 26,
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
-                      : Text(
-                          _isRegister ? 'ЗАРЕГИСТРИРОВАТЬСЯ' : 'ВОЙТИ',
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                        ),
+                      : Text(_isRegister ? 'ЗАРЕГИСТРИРОВАТЬСЯ' : 'ВОЙТИ',
+                          style: const TextStyle(fontSize: 20,
+                              fontWeight: FontWeight.bold, letterSpacing: 0.5)),
                 ),
               ),
-
               const SizedBox(height: 12),
-
               TextButton(
                 onPressed: _loading ? null : () => setState(() {
                   _isRegister = !_isRegister;
@@ -219,12 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Icon(Icons.error_outline, color: accent, size: 26),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _error!,
-                          style: TextStyle(color: accent, fontSize: 16),
-                        ),
-                      ),
+                      Expanded(child: Text(_error!, style: TextStyle(color: accent, fontSize: 16))),
                     ],
                   ),
                 ),
@@ -236,8 +215,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _roleCard(String title, String subtitle, IconData icon, String value,
-      Color primary, Color accent) {
+  Widget _roleCard(String title, String subtitle, IconData icon,
+      String value, Color primary) {
     final selected = _role == value;
     return InkWell(
       onTap: () => setState(() => _role = value),
@@ -257,24 +236,14 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Icon(icon, size: 40, color: selected ? primary : Colors.grey),
             const SizedBox(height: 6),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: selected ? FontWeight.bold : FontWeight.w500,
-                color: selected ? primary : null,
-              ),
-            ),
+            Text(title, textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15,
+                    fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                    color: selected ? primary : null)),
             const SizedBox(height: 2),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              ),
-            ),
+            Text(subtitle, textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
           ],
         ),
       ),
@@ -282,7 +251,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-/// Универсальное поле с иконкой слева и опциональной иконкой справа.
 class _Field extends StatelessWidget {
   final TextEditingController controller;
   final String label;
