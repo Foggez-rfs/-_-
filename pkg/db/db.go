@@ -4,48 +4,44 @@ import (
 "fmt"
 "log"
 "os"
+"time"
 
 "github.com/joho/godotenv"
 "gorm.io/driver/postgres"
 "gorm.io/gorm"
+"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
 func InitDB() {
 _ = godotenv.Load()
-
-// Формат key=value безопаснее задавать через url.URL либо
-// строкой без пробела перед dbname. Используем явные кавычки.
-dsn := fmt.Sprintf(
-"host=%s port=%s user=%s dbname=%s sslmode=disable password=%s",
+dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=%s password='%s'",
 getEnv("DB_HOST", "localhost"),
 getEnv("DB_PORT", "5432"),
 getEnv("DB_USER", "moe_user"),
 getEnv("DB_NAME", "moe_delo"),
-quoteIfEmpty(getEnv("DB_PASSWORD", "")),
+getEnv("DB_SSLMODE", "disable"),
+getEnv("DB_PASSWORD", ""),
 )
-
-
 var err error
-DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+Logger: logger.Default.LogMode(logger.Warn),
+})
 if err != nil {
 log.Fatalf("Ошибка подключения к БД: %v", err)
+}
+sqlDB, _ := DB.DB()
+sqlDB.SetMaxOpenConns(20)
+sqlDB.SetMaxIdleConns(5)
+sqlDB.SetConnMaxLifetime(time.Hour)
+if err := sqlDB.Ping(); err != nil {
+log.Fatalf("БД не отвечает: %v", err)
 }
 log.Println("PostgreSQL подключена")
 }
 
-// quoteIfEmpty оборачивает пароль в кавычки, если он пустой
-func quoteIfEmpty(s string) string {
-if s == "" {
-return "''"
-}
-return s
-}
-
-func getEnv(key, fallback string) string {
-if val := os.Getenv(key); val != "" {
-return val
-}
-return fallback
+func getEnv(k, fb string) string {
+if v := os.Getenv(k); v != "" { return v }
+return fb
 }

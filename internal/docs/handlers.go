@@ -1,32 +1,40 @@
 package docs
 
 import (
-	"fmt"
-	"net/http"
-	"path/filepath"
-	"time"
+"fmt"
+"os"
+"path/filepath"
+"time"
 
-	"github.com/gin-gonic/gin"
+"github.com/gin-gonic/gin"
 
-	"github.com/Foggez-rfs/moedelo/pkg/db"
+"github.com/Foggez-rfs/moedelo/pkg/db"
 )
 
 func UploadDocument(c *gin.Context) {
-	userID := c.GetUint("user_id")
-	docType := c.PostForm("doc_type")
-	file, err := c.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "файл не загружен"})
-		return
-	}
-	ext := filepath.Ext(file.Filename)
-	filename := fmt.Sprintf("doc_%d_%d%s", userID, time.Now().Unix(), ext)
-	filePath := filepath.Join("uploads", filename)
-	if err := c.SaveUploadedFile(file, filePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка сохранения файла"})
-		return
-	}
-	doc := Document{UserID: userID, DocType: docType, FilePath: filePath}
-	db.DB.Create(&doc)
-	c.JSON(http.StatusCreated, gin.H{"message": "документ загружен", "document": doc})
+uid := c.GetUint("user_id")
+dt := c.PostForm("doc_type")
+if dt == "" {
+c.JSON(400, gin.H{"error": "укажите тип документа"})
+return
+}
+f, err := c.FormFile("file")
+if err != nil {
+c.JSON(400, gin.H{"error": "файл не загружен"})
+return
+}
+if f.Size > 10*1024*1024 {
+c.JSON(413, gin.H{"error": "файл больше 10 МБ"})
+return
+}
+_ = os.MkdirAll("uploads", 0755)
+name := fmt.Sprintf("doc_%d_%d%s", uid, time.Now().Unix(), filepath.Ext(f.Filename))
+path := filepath.Join("uploads", name)
+if err := c.SaveUploadedFile(f, path); err != nil {
+c.JSON(500, gin.H{"error": "не удалось сохранить"})
+return
+}
+d := Document{UserID: uid, DocType: dt, FilePath: path}
+db.DB.Create(&d)
+c.JSON(201, gin.H{"message": "документ загружен", "document": d})
 }

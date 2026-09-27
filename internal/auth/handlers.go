@@ -1,65 +1,69 @@
 package auth
 
 import (
-	"net/http"
+"strings"
 
-	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
+"github.com/gin-gonic/gin"
+"golang.org/x/crypto/bcrypt"
 
-	"github.com/Foggez-rfs/moedelo/internal/users"
-	"github.com/Foggez-rfs/moedelo/pkg/db"
-	"github.com/Foggez-rfs/moedelo/pkg/middleware"
+"github.com/Foggez-rfs/moedelo/internal/users"
+"github.com/Foggez-rfs/moedelo/pkg/db"
+"github.com/Foggez-rfs/moedelo/pkg/middleware"
 )
 
 type RegisterInput struct {
-	Phone     string `json:"phone" binding:"required"`
-	Password  string `json:"password" binding:"required,min=4"`
-	Role      string `json:"role" binding:"required,oneof=customer executor"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
+Phone     string `json:"phone" binding:"required,min=10,max=20"`
+Password  string `json:"password" binding:"required,min=4,max=100"`
+Role      string `json:"role" binding:"required,oneof=customer executor"`
+FirstName string `json:"first_name" binding:"max=100"`
+LastName  string `json:"last_name" binding:"max=100"`
 }
 
 func Register(c *gin.Context) {
-	var input RegisterInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка хеширования"})
-		return
-	}
-	user := users.User{
-		Phone: input.Phone, PasswordHash: string(hash), Role: input.Role,
-		FirstName: input.FirstName, LastName: input.LastName,
-	}
-	if err := db.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "пользователь уже существует"})
-		return
-	}
-	token, _ := middleware.GenerateToken(user.ID, user.Role)
-	c.JSON(http.StatusCreated, gin.H{"message": "регистрация успешна", "token": token, "user_id": user.ID})
+var in RegisterInput
+if err := c.ShouldBindJSON(&in); err != nil {
+c.JSON(400, gin.H{"error": err.Error()})
+return
+}
+phone := strings.TrimSpace(in.Phone)
+
+var existing users.User
+if err := db.DB.Where("phone = ?", phone).First(&existing).Error; err == nil {
+c.JSON(409, gin.H{"error": "пользователь уже существует"})
+return
+}
+
+hash, _ := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
+u := users.User{
+Phone: phone, PasswordHash: string(hash),
+Role: in.Role, FirstName: in.FirstName, LastName: in.LastName,
+}
+if err := db.DB.Create(&u).Error; err != nil {
+c.JSON(500, gin.H{"error": "не удалось создать"})
+return
+}
+token, _ := middleware.GenerateToken(u.ID, u.Role)
+c.JSON(201, gin.H{"message": "регистрация успешна", "token": token, "user_id": u.ID, "role": u.Role})
 }
 
 func Login(c *gin.Context) {
-	var input struct {
-		Phone    string `json:"phone" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	var user users.User
-	if err := db.DB.Where("phone = ?", input.Phone).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "неверный телефон или пароль"})
-		return
-	}
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "неверный телефон или пароль"})
-		return
-	}
-	token, _ := middleware.GenerateToken(user.ID, user.Role)
-	c.JSON(http.StatusOK, gin.H{"token": token, "user_id": user.ID, "role": user.Role})
+var in struct {
+Phone    string `json:"phone" binding:"required"`
+Password string `json:"password" binding:"required"`
+}
+if err := c.ShouldBindJSON(&in); err != nil {
+c.JSON(400, gin.H{"error": err.Error()})
+return
+}
+var u users.User
+if err := db.DB.Where("phone = ?", strings.TrimSpace(in.Phone)).First(&u).Error; err != nil {
+c.JSON(401, gin.H{"error": "неверный телефон или пароль"})
+return
+}
+if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(in.Password)) != nil {
+c.JSON(401, gin.H{"error": "неверный телефон или пароль"})
+return
+}
+token, _ := middleware.GenerateToken(u.ID, u.Role)
+c.JSON(200, gin.H{"token": token, "user_id": u.ID, "role": u.Role, "name": u.FirstName})
 }
