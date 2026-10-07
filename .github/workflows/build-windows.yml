@@ -8,11 +8,16 @@ on:
       - '.github/workflows/build-windows.yml'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-windows:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: subosito/flutter-action@v2
         with:
@@ -23,39 +28,67 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
+      - name: Check Visual Studio
+        shell: pwsh
+        run: |
+          Write-Host "=== Visual Studio installations ==="
+          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -all -products * -format json | Out-String
+
       - name: Generate Windows scaffolding
         working-directory: mobile
+        shell: pwsh
         run: |
-          flutter create --platforms=windows --org com.foggez --project-name moe_delo .
+          flutter create --platforms=windows --org com.foggez --project_name moe_delo .
 
       - name: Get dependencies
         working-directory: mobile
+        shell: pwsh
         run: flutter pub get
 
-      - name: Build Windows EXE
+      - name: Build Windows EXE (force VS 2022)
         working-directory: mobile
-        run: flutter build windows --release
-
-      - name: Zip the build
-        working-directory: mobile
-        run: |
-          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath moe-delo-windows.zip
         shell: pwsh
+        env:
+          CMAKE_GENERATOR: "Visual Studio 17 2022"
+        run: |
+          flutter build windows --release
 
-      - name: Upload EXE as artifact
+      - name: List build output (debug)
+        working-directory: mobile
+        shell: pwsh
+        run: |
+          Write-Host "=== build/windows ==="
+          if (Test-Path "build\windows") {
+            Get-ChildItem -Recurse "build\windows" -Depth 3 | Select-Object FullName | Out-String
+          } else {
+            Write-Host "❌ build/windows НЕ существует"
+          }
+
+      - name: Zip portable
+        working-directory: mobile
+        shell: pwsh
+        run: |
+          $releasePath = "build\windows\x64\runner\Release"
+          if (-not (Test-Path $releasePath)) {
+            Write-Host "❌ $releasePath не найден"
+            exit 1
+          }
+          Compress-Archive -Path "$releasePath\*" -DestinationPath moe-delo-windows-portable.zip
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: moe-delo-windows
-          path: mobile/moe-delo-windows.zip
+          path: mobile/moe-delo-windows-portable.zip
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: win-v1.0.${{ github.run_number }}
-          name: Windows EXE v1.0.${{ github.run_number }}
+          name: Windows v1.0.${{ github.run_number }}
           body: |
-            Windows-версия приложения «Моё дело».
-            Распакуйте архив и запустите `moe_delo.exe`.
-          files: mobile/moe-delo-windows.zip
+            Портативная Windows-версия «Моё дело».
+            Распакуйте и запустите `moe_delo.exe`.
+          files: mobile/moe-delo-windows-portable.zip
           draft: false
           prerelease: false
