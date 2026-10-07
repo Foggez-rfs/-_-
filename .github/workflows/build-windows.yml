@@ -28,38 +28,47 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
-      - name: Check Visual Studio
-        shell: pwsh
-        run: |
-          Write-Host "=== Visual Studio installations ==="
-          & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -all -products * -format json | Out-String
-
       - name: Generate Windows scaffolding
         working-directory: mobile
         shell: pwsh
         run: |
           flutter create --platforms=windows --org com.foggez --project-name moe_delo .
 
+      - name: Patch CMakeLists for VS 2022
+        working-directory: mobile
+        shell: pwsh
+        run: |
+          $file = "windows\CMakeLists.txt"
+          Write-Host "=== Оригинал (первые 10 строк) ==="
+          Get-Content $file | Select-Object -First 10
+          Write-Host ""
+
+          $content = Get-Content $file -Raw
+          $content = $content -replace 'Visual Studio 16 2019', 'Visual Studio 17 2022'
+          $content | Set-Content $file -NoNewline
+
+          Write-Host "=== После патча (первые 10 строк) ==="
+          Get-Content $file | Select-Object -First 10
+
       - name: Get dependencies
         working-directory: mobile
         shell: pwsh
         run: flutter pub get
 
-      - name: Build Windows EXE (force VS 2022)
+      - name: Build Windows EXE
         working-directory: mobile
         shell: pwsh
-        env:
-          CMAKE_GENERATOR: "Visual Studio 17 2022"
-        run: |
-          flutter build windows --release
+        run: flutter build windows --release
 
-      - name: List build output (debug)
+      - name: List build output
         working-directory: mobile
         shell: pwsh
         run: |
           Write-Host "=== build/windows ==="
           if (Test-Path "build\windows") {
-            Get-ChildItem -Recurse "build\windows" -Depth 3 | Select-Object FullName | Out-String
+            Get-ChildItem -Recurse "build\windows" -Depth 3 |
+              Where-Object { $_.Name -eq "moe_delo.exe" -or $_.Name -like "*.dll" } |
+              Select-Object FullName | Out-String
           } else {
             Write-Host "❌ build/windows НЕ существует"
           }
@@ -73,6 +82,8 @@ jobs:
             Write-Host "❌ $releasePath не найден"
             exit 1
           }
+          Write-Host "=== Содержимое Release ==="
+          Get-ChildItem $releasePath | Out-String
           Compress-Archive -Path "$releasePath\*" -DestinationPath moe-delo-windows-portable.zip
 
       - name: Upload artifact
@@ -88,7 +99,7 @@ jobs:
           name: Windows v1.0.${{ github.run_number }}
           body: |
             Портативная Windows-версия «Моё дело».
-            Распакуйте и запустите `moe_delo.exe`.
+            Распакуйте архив и запустите `moe_delo.exe`.
           files: mobile/moe-delo-windows-portable.zip
           draft: false
           prerelease: false
