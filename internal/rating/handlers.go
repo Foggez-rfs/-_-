@@ -30,9 +30,13 @@ if o.ExecutorID == nil {
 c.JSON(400, gin.H{"error": "заказ ещё не принят"})
 return
 }
-db.DB.Create(&Review{OrderID: uint(oid), ExecutorID: *o.ExecutorID, CustomerID: uid, Score: in.Score, Comment: in.Comment})
+db.DB.Create(&Review{
+OrderID: uint(oid), ExecutorID: *o.ExecutorID,
+CustomerID: uid, Score: in.Score, Comment: in.Comment,
+})
 var avg float64
-db.DB.Model(&Review{}).Where("executor_id = ?", *o.ExecutorID).Select("COALESCE(AVG(score), 5.0)").Scan(&avg)
+db.DB.Model(&Review{}).Where("executor_id = ?", *o.ExecutorID).
+Select("COALESCE(AVG(score), 5.0)").Scan(&avg)
 db.DB.Model(&users.User{}).Where("id = ?", *o.ExecutorID).Update("rating", avg)
 db.DB.Table("orders").Where("id = ?", oid).Update("status", "completed")
 c.JSON(200, gin.H{"message": "оценка сохранена", "new_rating": avg})

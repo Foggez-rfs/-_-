@@ -37,13 +37,20 @@ hash, _ := bcrypt.GenerateFromPassword([]byte(in.Password), bcrypt.DefaultCost)
 u := users.User{
 Phone: phone, PasswordHash: string(hash),
 Role: in.Role, FirstName: in.FirstName, LastName: in.LastName,
+Lat: 55.75, Lon: 37.62,
 }
 if err := db.DB.Create(&u).Error; err != nil {
-c.JSON(500, gin.H{"error": "не удалось создать"})
+c.JSON(500, gin.H{"error": "не удалось создать пользователя"})
 return
 }
 token, _ := middleware.GenerateToken(u.ID, u.Role)
-c.JSON(201, gin.H{"message": "регистрация успешна", "token": token, "user_id": u.ID, "role": u.Role})
+c.JSON(201, gin.H{
+"message": "регистрация успешна",
+"token":   token,
+"user_id": u.ID,
+"role":    u.Role,
+"name":    u.FirstName,
+})
 }
 
 func Login(c *gin.Context) {
@@ -65,5 +72,7 @@ c.JSON(401, gin.H{"error": "неверный телефон или пароль"
 return
 }
 token, _ := middleware.GenerateToken(u.ID, u.Role)
-c.JSON(200, gin.H{"token": token, "user_id": u.ID, "role": u.Role, "name": u.FirstName})
+c.JSON(200, gin.H{
+"token": token, "user_id": u.ID, "role": u.Role, "name": u.FirstName,
+})
 }

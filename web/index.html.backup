@@ -3,517 +3,154 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1E3A8A">
 <title>Моё дело</title>
 <style>
-  :root {
-    --blue: #1E3A8A;
-    --blue-light: #3B5BC7;
-    --red: #DC2626;
-    --bg-light: #F8FAFC;
-    --bg-dark: #0F172A;
-    --card-light: #FFFFFF;
-    --card-dark: #1E293B;
-    --text-light: #0F172A;
-    --text-dark: #F1F5F9;
-    --text-muted: #64748B;
-    --border: rgba(30, 58, 138, 0.25);
-    --radius: 16px;
-    --shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  }
-
-  [data-theme="dark"] {
-    --bg: var(--bg-dark);
-    --card: var(--card-dark);
-    --text: var(--text-dark);
-  }
-
-  [data-theme="light"], :root {
-    --bg: var(--bg-light);
-    --card: var(--card-light);
-    --text: var(--text-light);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html, body {
-    height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    transition: background 0.3s, color 0.3s;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  #app {
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  /* -------- AppBar -------- */
-  .appbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    background: var(--blue);
-    color: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .appbar h1 {
-    font-size: 22px;
-    font-weight: 700;
-  }
-  .appbar .actions {
-    display: flex;
-    gap: 8px;
-  }
-  .icon-btn {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    color: white;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    font-size: 20px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-  }
-  .icon-btn:active { background: rgba(255,255,255,0.3); }
-
-  /* -------- Content -------- */
-  .content {
-    flex: 1;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  /* -------- Screens -------- */
-  .screen { display: none; }
-  .screen.active { display: flex; flex-direction: column; gap: 16px; }
-
-  /* -------- Logo -------- */
-  .logo {
-    text-align: center;
-    padding: 24px 0 8px;
-  }
-  .logo svg, .logo .emoji {
-    font-size: 80px;
-    line-height: 1;
-    display: block;
-    margin-bottom: 12px;
-  }
-  .logo h2 {
-    font-size: 30px;
-    color: var(--blue);
-    font-weight: 700;
-  }
-  [data-theme="dark"] .logo h2 { color: #7EA3FF; }
-  .logo p {
-    color: var(--text-muted);
-    font-size: 16px;
-    margin-top: 6px;
-  }
-
-  /* -------- Forms -------- */
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .field label {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-muted);
-    padding-left: 4px;
-  }
-  .field input, .field textarea {
-    width: 100%;
-    padding: 18px 20px;
-    font-size: 18px;
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--card);
-    color: var(--text);
-    outline: none;
-    transition: border 0.2s;
-    font-family: inherit;
-  }
-  .field input:focus, .field textarea:focus {
-    border-color: var(--blue);
-  }
-  .field textarea {
-    resize: vertical;
-    min-height: 100px;
-    line-height: 1.4;
-  }
-
-  /* -------- Role cards -------- */
-  .role-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .role-card {
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 10px;
-    background: var(--card);
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    user-select: none;
-  }
-  .role-card .emoji { font-size: 40px; display: block; margin-bottom: 6px; }
-  .role-card .title {
-    font-size: 15px;
-    font-weight: 700;
-  }
-  .role-card .sub {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 2px;
-  }
-  .role-card.selected {
-    border-color: var(--blue);
-    background: rgba(30, 58, 138, 0.08);
-    transform: scale(1.02);
-  }
-  .role-card.selected .title { color: var(--blue); }
-  [data-theme="dark"] .role-card.selected .title { color: #7EA3FF; }
-
-  /* -------- Buttons -------- */
-  .btn {
-    width: 100%;
-    padding: 20px;
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s;
-    font-family: inherit;
-  }
-  .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .btn-primary {
-    background: var(--red);
-    color: white;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-  }
-  .btn-blue {
-    background: var(--blue);
-    color: white;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--blue);
-    border: 2px solid var(--blue);
-  }
-  [data-theme="dark"] .btn-outline { color: #7EA3FF; border-color: #7EA3FF; }
-  .btn-link {
-    background: none;
-    border: none;
-    color: var(--blue);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 12px;
-    font-family: inherit;
-    width: 100%;
-  }
-  [data-theme="dark"] .btn-link { color: #7EA3FF; }
-
-  /* -------- Messages -------- */
-  .msg {
-    padding: 16px;
-    border-radius: var(--radius);
-    font-size: 16px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    line-height: 1.4;
-  }
-  .msg.error {
-    background: rgba(220, 38, 38, 0.1);
-    border: 2px solid var(--red);
-    color: var(--red);
-  }
-  .msg.success {
-    background: rgba(34, 197, 94, 0.1);
-    border: 2px solid #22c55e;
-    color: #16a34a;
-  }
-  .msg.info {
-    background: rgba(30, 58, 138, 0.08);
-    border: 2px solid var(--blue);
-    color: var(--blue);
-  }
-  [data-theme="dark"] .msg.info { color: #7EA3FF; border-color: #7EA3FF; }
-
-  /* -------- Order cards -------- */
-  .order-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 18px;
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    border: 1px solid rgba(0,0,0,0.04);
-  }
-  .order-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .badge {
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    background: rgba(30, 58, 138, 0.1);
-    color: var(--blue);
-  }
-  [data-theme="dark"] .badge { color: #7EA3FF; background: rgba(126, 163, 255, 0.15); }
-  .badge.urgent {
-    background: rgba(220, 38, 38, 0.15);
-    color: var(--red);
-  }
-  .order-desc {
-    font-size: 17px;
-    line-height: 1.4;
-  }
-  .order-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text-muted);
-    font-size: 14px;
-  }
-
-  /* -------- Empty -------- */
-  .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-muted);
-  }
-  .empty .emoji { font-size: 72px; margin-bottom: 16px; display: block; }
-  .empty p { font-size: 18px; margin-bottom: 20px; }
-
-  /* -------- Big customer button -------- */
-  .big-action {
-    background: var(--red);
-    color: white;
-    border-radius: 24px;
-    padding: 40px 24px;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
-    transition: transform 0.1s;
-    user-select: none;
-  }
-  .big-action:active { transform: scale(0.98); }
-  .big-action .emoji { font-size: 90px; display: block; margin-bottom: 12px; }
-  .big-action h3 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
-  .big-action p { font-size: 17px; opacity: 0.9; }
-
-  /* -------- Loader -------- */
-  .loader {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-muted);
-  }
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid var(--border);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* -------- Profile -------- */
-  .profile-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 24px;
-    box-shadow: var(--shadow);
-    text-align: center;
-  }
-  .profile-avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: var(--blue);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 48px;
-    margin: 0 auto 16px;
-  }
-  .profile-name { font-size: 24px; font-weight: 700; }
-  .profile-role { color: var(--text-muted); font-size: 16px; margin-top: 4px; }
-
-  /* -------- Toast -------- */
-  .toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #1E293B;
-    color: white;
-    padding: 14px 22px;
-    border-radius: 12px;
-    font-size: 15px;
-    z-index: 1000;
-    transition: transform 0.3s;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    max-width: 90%;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+:root, [data-theme="light"] {
+  --bg: #F8FAFC; --card: #FFFFFF; --text: #0F172A; --muted: #64748B;
+  --blue: #1E3A8A; --red: #DC2626; --border: rgba(30,58,138,0.2);
+}
+[data-theme="dark"] {
+  --bg: #0F172A; --card: #1E293B; --text: #F1F5F9; --muted: #94A3B8;
+  --border: rgba(126,163,255,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { font-family: -apple-system, Roboto, sans-serif; background:var(--bg); color:var(--text); transition:0.3s; }
+#app { max-width:480px; margin:0 auto; min-height:100vh; padding-bottom:20px; }
+.appbar { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:var(--blue); color:#fff; position:sticky; top:0; z-index:10; }
+.appbar h1 { font-size:22px; font-weight:700; }
+.appbar .actions { display:flex; gap:8px; }
+.icon-btn { background:rgba(255,255,255,0.15); border:none; color:#fff; width:44px; height:44px; border-radius:12px; font-size:20px; cursor:pointer; }
+.screen { display:none; padding:20px; }
+.screen.active { display:block; }
+.logo { text-align:center; padding:20px 0; }
+.logo .emoji { font-size:80px; display:block; margin-bottom:8px; }
+.logo h2 { font-size:28px; color:var(--blue); margin-bottom:4px; }
+[data-theme="dark"] .logo h2 { color:#7EA3FF; }
+.logo p { color:var(--muted); font-size:16px; }
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:15px; font-weight:600; color:var(--muted); margin-bottom:6px; padding-left:4px; }
+.field input, .field textarea { width:100%; padding:18px 20px; font-size:18px; border:2px solid var(--border); border-radius:16px; background:var(--card); color:var(--text); outline:none; font-family:inherit; }
+.field textarea { min-height:110px; resize:vertical; }
+.field input:focus, .field textarea:focus { border-color:var(--blue); }
+.role-cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+.role-card { border:2px solid var(--border); border-radius:16px; padding:16px 8px; background:var(--card); text-align:center; cursor:pointer; }
+.role-card .emoji { font-size:36px; display:block; margin-bottom:6px; }
+.role-card .title { font-size:15px; font-weight:700; }
+.role-card.selected { border-color:var(--blue); background:rgba(30,58,138,0.08); }
+.role-card.selected .title { color:var(--blue); }
+[data-theme="dark"] .role-card.selected .title { color:#7EA3FF; }
+.btn { width:100%; padding:20px; font-size:20px; font-weight:700; border:none; border-radius:16px; cursor:pointer; font-family:inherit; }
+.btn-primary { background:var(--red); color:#fff; box-shadow:0 4px 12px rgba(220,38,38,0.3); }
+.btn-blue { background:var(--blue); color:#fff; }
+.btn-outline { background:transparent; color:var(--blue); border:2px solid var(--blue); }
+[data-theme="dark"] .btn-outline { color:#7EA3FF; border-color:#7EA3FF; }
+.btn:disabled { opacity:0.6; }
+.btn-link { background:none; border:none; color:var(--blue); font-size:16px; padding:12px; width:100%; cursor:pointer; font-family:inherit; }
+[data-theme="dark"] .btn-link { color:#7EA3FF; }
+.msg { padding:14px 16px; border-radius:14px; font-size:16px; margin-bottom:12px; }
+.msg.error { background:rgba(220,38,38,0.1); border:2px solid var(--red); color:var(--red); }
+.msg.success { background:rgba(34,197,94,0.1); border:2px solid #22c55e; color:#16a34a; }
+.msg.info { background:rgba(30,58,138,0.08); border:2px solid var(--blue); color:var(--blue); }
+[data-theme="dark"] .msg.info { color:#7EA3FF; border-color:#7EA3FF; }
+.big-action { background:var(--red); color:#fff; border-radius:24px; padding:40px 24px; text-align:center; cursor:pointer; box-shadow:0 8px 24px rgba(220,38,38,0.3); margin-bottom:20px; }
+.big-action .emoji { font-size:80px; display:block; margin-bottom:12px; }
+.big-action h3 { font-size:28px; margin-bottom:6px; }
+.big-action p { font-size:17px; opacity:0.9; }
+.order-card { background:var(--card); border-radius:16px; padding:18px; margin-bottom:12px; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+.order-head { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.badge { padding:4px 10px; border-radius:8px; font-size:13px; font-weight:700; background:rgba(30,58,138,0.1); color:var(--blue); }
+[data-theme="dark"] .badge { color:#7EA3FF; background:rgba(126,163,255,0.15); }
+.badge.urgent { background:rgba(220,38,38,0.15); color:var(--red); }
+.order-desc { font-size:17px; margin-bottom:8px; line-height:1.4; }
+.order-meta { color:var(--muted); font-size:14px; margin-bottom:12px; }
+.empty { text-align:center; padding:50px 20px; color:var(--muted); }
+.empty .emoji { font-size:70px; display:block; margin-bottom:16px; }
+.empty p { font-size:18px; margin-bottom:20px; }
+.loader { text-align:center; padding:40px; color:var(--muted); }
+.spinner { width:40px; height:40px; border:4px solid var(--border); border-top-color:var(--blue); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:#1E293B; color:#fff; padding:14px 22px; border-radius:12px; font-size:15px; z-index:1000; transition:transform 0.3s; max-width:90%; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.profile-card { background:var(--card); border-radius:16px; padding:24px; text-align:center; margin-bottom:16px; }
+.profile-avatar { width:100px; height:100px; border-radius:50%; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-size:44px; font-weight:700; margin:0 auto 16px; }
+.profile-name { font-size:22px; font-weight:700; }
+.profile-role { color:var(--muted); font-size:16px; margin-top:4px; }
 </style>
 </head>
 <body>
 <div id="app">
-
-  <!-- ============ APP BAR ============ -->
   <div class="appbar">
     <h1 id="appTitle">Моё дело</h1>
     <div class="actions">
-      <button class="icon-btn" id="themeBtn" title="Сменить тему">🌓</button>
-      <button class="icon-btn" id="logoutBtn" style="display:none;" title="Выйти">⎋</button>
+      <button class="icon-btn" id="themeBtn" title="Тема">🌓</button>
+      <button class="icon-btn" id="logoutBtn" style="display:none" title="Выйти">⎋</button>
     </div>
   </div>
 
-  <div class="content">
-
-    <!-- ============ LOGIN ============ -->
-    <div class="screen active" id="screen-login">
-      <div class="logo">
-        <span class="emoji">🤝</span>
-        <h2>Помощь рядом</h2>
-        <p id="loginSubtitle">Войдите, чтобы продолжить</p>
-      </div>
-
-      <div class="field">
-        <label>Телефон</label>
-        <input type="tel" id="loginPhone" placeholder="+7 900 123-45-67" autocomplete="tel">
-      </div>
-      <div class="field">
-        <label>Пароль</label>
-        <input type="password" id="loginPassword" placeholder="Минимум 4 символа" autocomplete="current-password">
-      </div>
-
-      <div id="registerExtra" style="display:none;">
-        <div class="field" style="margin-bottom:12px;">
-          <label>Как вас зовут?</label>
-          <input type="text" id="loginName" placeholder="Иван" autocomplete="given-name">
-        </div>
-        <label style="font-size:15px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:8px;">Кто вы?</label>
-        <div class="role-cards">
-          <div class="role-card selected" data-role="customer">
-            <span class="emoji">🧓</span>
-            <div class="title">Заказчик</div>
-            <div class="sub">Нужна помощь</div>
-          </div>
-          <div class="role-card" data-role="executor">
-            <span class="emoji">🔧</span>
-            <div class="title">Исполнитель</div>
-            <div class="sub">Хочу помочь</div>
-          </div>
-        </div>
-      </div>
-
-      <div id="loginMsg"></div>
-
-      <button class="btn btn-primary" id="submitBtn">ВОЙТИ</button>
-      <button class="btn-link" id="toggleModeBtn">Нет аккаунта? Регистрация</button>
+  <!-- ЛОГИН -->
+  <div class="screen active" id="screen-login">
+    <div class="logo">
+      <span class="emoji">🤝</span>
+      <h2>Помощь рядом</h2>
+      <p id="loginSubtitle">Войдите, чтобы продолжить</p>
     </div>
-
-    <!-- ============ CUSTOMER ============ -->
-    <div class="screen" id="screen-customer">
-      <div class="big-action" id="newOrderBtn">
-        <span class="emoji">➕</span>
-        <h3>Оформить заказ</h3>
-        <p>Нажмите и опишите, что нужно</p>
+    <div class="field"><label>Телефон</label><input type="tel" id="loginPhone" placeholder="+7 900 123-45-67"></div>
+    <div class="field"><label>Пароль</label><input type="password" id="loginPassword" placeholder="Минимум 4 символа"></div>
+    <div id="registerExtra" style="display:none">
+      <div class="field"><label>Имя</label><input type="text" id="loginName" placeholder="Иван"></div>
+      <label style="font-size:15px;font-weight:600;color:var(--muted);display:block;margin-bottom:8px;">Кто вы?</label>
+      <div class="role-cards">
+        <div class="role-card selected" data-role="customer"><span class="emoji">🧓</span><div class="title">Заказчик</div></div>
+        <div class="role-card" data-role="executor"><span class="emoji">🔧</span><div class="title">Исполнитель</div></div>
       </div>
-
-      <div class="msg info">
-        <span>💡</span>
-        <span>Опишите задачу словами — например «прорвало кран, вода льётся». ИИ сам определит категорию.</span>
-      </div>
-
-      <div id="customerMsg"></div>
     </div>
+    <div id="loginMsg"></div>
+    <button class="btn btn-primary" id="submitBtn" style="margin-bottom:12px">ВОЙТИ</button>
+    <button class="btn-link" id="toggleModeBtn">Нет аккаунта? Регистрация</button>
+  </div>
 
-    <!-- ============ NEW ORDER ============ -->
-    <div class="screen" id="screen-new-order">
-      <div class="field">
-        <label>Что нужно сделать?</label>
-        <textarea id="orderDesc" placeholder="Например: прорвало кран на кухне, вода льётся на пол"></textarea>
-      </div>
-      <div class="field">
-        <label>Адрес</label>
-        <input type="text" id="orderAddr" placeholder="Улица, дом, квартира">
-      </div>
-
-      <div id="orderMsg"></div>
-
-      <button class="btn btn-primary" id="createOrderBtn">ОТПРАВИТЬ ЗАКАЗ</button>
-      <button class="btn-outline btn" id="backToCustomerBtn">← Назад</button>
+  <!-- ЗАКАЗЧИК -->
+  <div class="screen" id="screen-customer">
+    <div class="big-action" id="newOrderBtn">
+      <span class="emoji">➕</span>
+      <h3>Оформить заказ</h3>
+      <p>Нажмите и опишите, что нужно</p>
     </div>
+    <div class="msg info">💡 Опишите задачу словами — например «прорвало кран». ИИ сам определит категорию.</div>
+    <div id="customerMsg"></div>
+  </div>
 
-    <!-- ============ EXECUTOR ============ -->
-    <div class="screen" id="screen-executor">
-      <div id="executorLoader" class="loader" style="display:none;">
-        <div class="spinner"></div>
-        <p>Загружаем заказы…</p>
-      </div>
-      <div id="executorList" style="display:flex;flex-direction:column;gap:12px;"></div>
-      <div id="executorMsg"></div>
+  <!-- НОВЫЙ ЗАКАЗ -->
+  <div class="screen" id="screen-new-order">
+    <div class="field"><label>Что нужно сделать?</label><textarea id="orderDesc" placeholder="Например: прорвало кран на кухне"></textarea></div>
+    <div class="field"><label>Адрес</label><input type="text" id="orderAddr" placeholder="Улица, дом, квартира"></div>
+    <div id="orderMsg"></div>
+    <button class="btn btn-primary" id="createOrderBtn" style="margin-bottom:12px">ОТПРАВИТЬ ЗАКАЗ</button>
+    <button class="btn btn-outline" id="backBtn">← Назад</button>
+  </div>
+
+  <!-- ИСПОЛНИТЕЛЬ -->
+  <div class="screen" id="screen-executor">
+    <div id="execLoader" class="loader" style="display:none"><div class="spinner"></div><p>Загружаем…</p></div>
+    <div id="executorList"></div>
+    <div id="executorMsg"></div>
+    <button class="btn btn-outline" id="refreshBtn" style="margin-top:12px">🔄 ОБНОВИТЬ</button>
+  </div>
+
+  <!-- ПРОФИЛЬ -->
+  <div class="screen" id="screen-profile">
+    <div class="profile-card">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <div class="profile-name" id="profileName">Гость</div>
+      <div class="profile-role" id="profileRole">—</div>
     </div>
-
-    <!-- ============ PROFILE ============ -->
-    <div class="screen" id="screen-profile">
-      <div class="profile-card">
-        <div class="profile-avatar" id="profileAvatar">?</div>
-        <div class="profile-name" id="profileName">Гость</div>
-        <div class="profile-role" id="profileRole">Роль не определена</div>
-      </div>
-      <button class="btn btn-primary" id="profileLogoutBtn">ВЫЙТИ</button>
-    </div>
-
+    <button class="btn btn-primary" id="profileLogoutBtn">ВЫЙТИ</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// НАСТРОЙКИ
-// ============================================================
-const API_URL = localStorage.getItem('apiUrl') || window.location.origin;
-
-// ============================================================
-// СОСТОЯНИЕ
-// ============================================================
+const API_URL = window.location.origin;
 const state = {
   token: localStorage.getItem('token') || null,
   role: localStorage.getItem('role') || null,
@@ -521,336 +158,120 @@ const state = {
   registerMode: false,
   selectedRole: 'customer',
 };
+const $ = id => document.getElementById(id);
 
-// ============================================================
-// API-КЛИЕНТ
-// ============================================================
-const api = {
-  async request(path, method = 'GET', body = null, auth = false) {
-    const headers = { 'Content-Type': 'application/json' };
-    if (auth && state.token) headers['Authorization'] = 'Bearer ' + state.token;
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo({top:0,behavior:'smooth'}); }
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2500); }
+function showMsg(id,text,type='error'){ $(id).innerHTML = text ? `<div class="msg ${type}">${text}</div>` : ''; }
+function setLoading(btn,loading,orig){ if(loading){btn.disabled=true;btn.dataset.orig=btn.textContent;btn.textContent='⏳...';}else{btn.disabled=false;btn.textContent=orig||btn.dataset.orig;} }
 
-    const opts = { method, headers };
-    if (body) opts.body = JSON.stringify(body);
-
-    try {
-      const res = await fetch(API_URL + path, opts);
-      const text = await res.text();
-      let data;
-      try { data = JSON.parse(text); } catch { data = { error: text || 'Ошибка сервера' }; }
-      return { ok: res.ok, status: res.status, data };
-    } catch (e) {
-      return { ok: false, status: 0, data: { error: 'Нет связи с сервером. Он запущен?' } };
-    }
-  },
-
-  register(phone, password, role, firstName) {
-    return this.request('/auth/register', 'POST', { phone, password, role, first_name: firstName });
-  },
-  login(phone, password) {
-    return this.request('/auth/login', 'POST', { phone, password });
-  },
-  createOrder(description, address, lat = 55.75, lon = 37.62) {
-    return this.request('/api/orders', 'POST', { description, address, lat, lon }, true);
-  },
-  nearby(lat = 55.75, lon = 37.62, radius = 5000) {
-    return this.request(`/api/orders/nearby?lat=${lat}&lon=${lon}&radius=${radius}`, 'GET', null, true);
-  },
-  accept(id) {
-    return this.request(`/api/orders/${id}/accept`, 'POST', {}, true);
-  },
-};
-
-// ============================================================
-// UI-УТИЛИТЫ
-// ============================================================
-function $(id) { return document.getElementById(id); }
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  $(id).classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+async function api(path, method='GET', body=null, auth=false){
+  const headers = {'Content-Type':'application/json'};
+  if(auth && state.token) headers['Authorization'] = 'Bearer ' + state.token;
+  const opts = {method, headers};
+  if(body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(API_URL+path, opts);
+    const text = await res.text();
+    let data; try{ data = JSON.parse(text); }catch{ data = {error: text || 'Ошибка сервера'}; }
+    return {ok: res.ok, status: res.status, data};
+  } catch(e){ return {ok:false, status:0, data:{error:'Нет связи с сервером'}}; }
 }
 
-function setTitle(t) { $('appTitle').textContent = t; }
-
-function showMsg(id, text, type = 'error') {
-  const el = $(id);
-  if (!text) { el.innerHTML = ''; return; }
-  const icon = type === 'error' ? '⚠️' : type === 'success' ? '✅' : '💡';
-  el.innerHTML = `<div class="msg ${type}"><span>${icon}</span><span>${text}</span></div>`;
-}
-
-function toast(text) {
-  const t = $('toast');
-  t.textContent = text;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function setLoading(btn, loading, originalText) {
-  if (loading) {
-    btn.disabled = true;
-    btn.dataset.orig = btn.textContent;
-    btn.textContent = '⏳ Загрузка…';
-  } else {
-    btn.disabled = false;
-    btn.textContent = originalText || btn.dataset.orig || 'ГОТОВО';
-  }
-}
-
-// ============================================================
-// ТЕМА
-// ============================================================
-function initTheme() {
-  const saved = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', saved);
-}
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme') || 'light';
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  // localStorage отключён в WebView;
-}
-
-// ============================================================
-// ЛОГИКА АВТОРИЗАЦИИ
-// ============================================================
-function setAuth(token, role, name = '') {
-  state.token = token;
-  state.role = role;
-  state.name = name;
-  localStorage.setItem('token', token);
-  localStorage.setItem('role', role);
-  localStorage.setItem('name', name);
-  updateAuthUI();
-}
-
-function clearAuth() {
-  state.token = null;
-  state.role = null;
-  state.name = '';
-  localStorage.removeItem('token');
-  localStorage.removeItem('role');
-  localStorage.removeItem('name');
-  updateAuthUI();
-}
-
-function updateAuthUI() {
+function updateAuthUI(){
   const logged = !!state.token;
   $('logoutBtn').style.display = logged ? 'flex' : 'none';
-
-  if (!logged) {
-    showScreen('screen-login');
-    setTitle('Моё дело');
-    return;
-  }
-
-  if (state.role === 'executor') {
-    showScreen('screen-executor');
-    setTitle('Заказы рядом');
-    loadNearby();
-  } else {
-    showScreen('screen-customer');
-    setTitle('Моё дело');
-  }
+  if(!logged){ showScreen('screen-login'); $('appTitle').textContent='Моё дело'; return; }
+  if(state.role === 'executor'){ showScreen('screen-executor'); $('appTitle').textContent='Заказы рядом'; loadNearby(); }
+  else { showScreen('screen-customer'); $('appTitle').textContent='Моё дело'; }
 }
 
-// ============================================================
-// РЕЖИМ РЕГИСТРАЦИИ
-// ============================================================
-function toggleRegisterMode() {
+function setAuth(token,role,name=''){ state.token=token; state.role=role; state.name=name; localStorage.setItem('token',token); localStorage.setItem('role',role); localStorage.setItem('name',name); updateAuthUI(); }
+function clearAuth(){ state.token=null; state.role=null; state.name=''; localStorage.removeItem('token'); localStorage.removeItem('role'); localStorage.removeItem('name'); updateAuthUI(); }
+
+function toggleRegisterMode(){
   state.registerMode = !state.registerMode;
   $('registerExtra').style.display = state.registerMode ? 'block' : 'none';
-  $('loginSubtitle').textContent = state.registerMode
-    ? 'Создайте новый аккаунт'
-    : 'Войдите, чтобы продолжить';
+  $('loginSubtitle').textContent = state.registerMode ? 'Создайте новый аккаунт' : 'Войдите, чтобы продолжить';
   $('submitBtn').textContent = state.registerMode ? 'ЗАРЕГИСТРИРОВАТЬСЯ' : 'ВОЙТИ';
-  $('toggleModeBtn').textContent = state.registerMode
-    ? 'Уже есть аккаунт? Войти'
-    : 'Нет аккаунта? Регистрация';
-  showMsg('loginMsg', '');
+  $('toggleModeBtn').textContent = state.registerMode ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Регистрация';
+  showMsg('loginMsg','');
 }
 
-// ============================================================
-// ЛОГИН / РЕГИСТРАЦИЯ
-// ============================================================
-async function submitAuth() {
+async function submitAuth(){
   const phone = $('loginPhone').value.trim();
   const pass = $('loginPassword').value;
   const name = $('loginName').value.trim();
-
-  if (!phone || !pass) {
-    showMsg('loginMsg', 'Заполните телефон и пароль');
-    return;
-  }
-  if (pass.length < 4) {
-    showMsg('loginMsg', 'Пароль минимум 4 символа');
-    return;
-  }
-
-  const btn = $('submitBtn');
-  setLoading(btn, true);
-  showMsg('loginMsg', '');
-
+  if(!phone || !pass){ showMsg('loginMsg','Заполните телефон и пароль'); return; }
+  if(pass.length < 4){ showMsg('loginMsg','Пароль минимум 4 символа'); return; }
+  const btn = $('submitBtn'); setLoading(btn,true); showMsg('loginMsg','');
   let res;
-  if (state.registerMode) {
-    res = await api.register(phone, pass, state.selectedRole, name);
-  } else {
-    res = await api.login(phone, pass);
-  }
-
-  setLoading(btn, false);
-
-  if (res.ok && res.data.token) {
-    setAuth(res.data.token, res.data.role, res.data.name || name);
-    $('loginPhone').value = '';
-    $('loginPassword').value = '';
-    $('loginName').value = '';
-    toast('Добро пожаловать!');
-  } else {
-    showMsg('loginMsg', res.data.error || 'Что-то пошло не так');
-  }
+  if(state.registerMode) res = await api('/auth/register','POST',{phone,password:pass,role:state.selectedRole,first_name:name});
+  else res = await api('/auth/login','POST',{phone,password:pass});
+  setLoading(btn,false);
+  if(res.ok && res.data.token){ setAuth(res.data.token,res.data.role,res.data.name||name); $('loginPhone').value=''; $('loginPassword').value=''; $('loginName').value=''; toast('Добро пожаловать!'); }
+  else { showMsg('loginMsg', res.data.error || 'Что-то пошло не так'); }
 }
 
-// ============================================================
-// ЗАКАЗЧИК — СОЗДАНИЕ ЗАКАЗА
-// ============================================================
-async function createOrder() {
+async function createOrder(){
   const desc = $('orderDesc').value.trim();
   const addr = $('orderAddr').value.trim();
-
-  if (!desc) {
-    showMsg('orderMsg', 'Опишите, что нужно сделать');
-    return;
-  }
-
-  const btn = $('createOrderBtn');
-  setLoading(btn, true);
-  showMsg('orderMsg', '');
-
-  const res = await api.createOrder(desc, addr || 'адрес не указан');
-  setLoading(btn, false);
-
-  if (res.ok) {
-    showMsg('orderMsg',
-      `Заказ создан! Категория: <b>${res.data.category}</b>, приоритет: <b>${res.data.priority}</b>`,
-      'success');
-    $('orderDesc').value = '';
-    $('orderAddr').value = '';
-    toast('Заказ создан');
-  } else {
-    showMsg('orderMsg', res.data.error || 'Не удалось создать заказ');
-  }
+  if(!desc){ showMsg('orderMsg','Опишите, что нужно'); return; }
+  const btn = $('createOrderBtn'); setLoading(btn,true); showMsg('orderMsg','');
+  const res = await api('/api/orders','POST',{description:desc,address:addr||'адрес не указан',lat:55.75,lon:37.62},true);
+  setLoading(btn,false);
+  if(res.ok){ showMsg('orderMsg',`Заказ создан! Категория: <b>${res.data.category}</b>, приоритет: <b>${res.data.priority}</b>`,'success'); $('orderDesc').value=''; $('orderAddr').value=''; toast('Заказ создан'); }
+  else { showMsg('orderMsg', res.data.error || 'Ошибка'); }
 }
 
-// ============================================================
-// ИСПОЛНИТЕЛЬ — СПИСОК ЗАКАЗОВ
-// ============================================================
-async function loadNearby() {
-  $('executorLoader').style.display = 'block';
-  $('executorList').innerHTML = '';
-  showMsg('executorMsg', '');
-
-  const res = await api.nearby();
-  $('executorLoader').style.display = 'none';
-
-  if (!res.ok) {
-    showMsg('executorMsg', res.data.error || 'Не удалось загрузить');
-    return;
-  }
-
+async function loadNearby(){
+  $('execLoader').style.display='block'; $('executorList').innerHTML=''; showMsg('executorMsg','');
+  const res = await api('/api/orders/nearby?lat=55.75&lon=37.62&radius=5000','GET',null,true);
+  $('execLoader').style.display='none';
+  if(!res.ok){ showMsg('executorMsg', res.data.error || 'Не удалось загрузить'); return; }
   const orders = res.data.orders || [];
-  if (orders.length === 0) {
-    $('executorList').innerHTML = `
-      <div class="empty">
-        <span class="emoji">📭</span>
-        <p>Заказов рядом нет</p>
-        <button class="btn btn-outline" onclick="loadNearby()">Обновить</button>
-      </div>`;
-    return;
-  }
-
-  $('executorList').innerHTML = orders.map(o => `
+  if(orders.length === 0){ $('executorList').innerHTML = `<div class="empty"><span class="emoji">📭</span><p>Заказов рядом нет</p></div>`; return; }
+  $('executorList').innerHTML = orders.map(o=>`
     <div class="order-card">
       <div class="order-head">
-        <span class="badge">${escapeHtml(o.category || '—')}</span>
-        ${o.priority === 1 ? '<span class="badge urgent">СРОЧНО</span>' : ''}
+        <span class="badge">${escapeHtml(o.category||'—')}</span>
+        ${o.priority===1?'<span class="badge urgent">СРОЧНО</span>':''}
       </div>
-      <div class="order-desc">${escapeHtml(o.description || '')}</div>
-      <div class="order-meta">📍 ${escapeHtml(o.address || '—')}</div>
-      <button class="btn btn-primary" onclick="acceptOrder(${o.id})">ПРИНЯТЬ</button>
+      <div class="order-desc">${escapeHtml(o.description||'')}</div>
+      <div class="order-meta">📍 ${escapeHtml(o.address||'—')}</div>
+      <button class="btn btn-primary" onclick="acceptOrder(${o.id}, this)">ПРИНЯТЬ</button>
     </div>
   `).join('');
 }
 
-async function acceptOrder(id) {
-  const res = await api.accept(id);
-  if (res.ok) {
-    toast('Заказ принят!');
-    loadNearby();
-  } else {
-    toast(res.data.error || 'Не удалось принять');
-  }
+async function acceptOrder(id, btn){
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Принимаем...'; }
+  const res = await api(`/api/orders/${id}/accept`,'POST',{},true);
+  if(res.ok){ toast('Заказ принят!'); loadNearby(); }
+  else { toast(res.data.error || 'Не удалось'); if(btn){ btn.disabled=false; btn.textContent='ПРИНЯТЬ'; } }
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
-}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// ============================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================
-function init() {
+function initTheme(){ const saved = localStorage.getItem('theme')||'light'; document.documentElement.setAttribute('data-theme',saved); }
+function toggleTheme(){ const cur = document.documentElement.getAttribute('data-theme')||'light'; const next = cur==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',next); localStorage.setItem('theme',next); }
+
+function init(){
   initTheme();
-
-  // Роли при регистрации
-  document.querySelectorAll('.role-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      state.selectedRole = card.dataset.role;
-    });
-  });
-
-  // Кнопки
-  $('themeBtn').addEventListener('click', toggleTheme);
-  $('submitBtn').addEventListener('click', submitAuth);
-  $('toggleModeBtn').addEventListener('click', toggleRegisterMode);
-  $('newOrderBtn').addEventListener('click', () => {
-    showScreen('screen-new-order');
-    setTitle('Новый заказ');
-  });
-  $('backToCustomerBtn').addEventListener('click', () => {
-    showScreen('screen-customer');
-    setTitle('Моё дело');
-  });
-  $('createOrderBtn').addEventListener('click', createOrder);
-  $('logoutBtn').addEventListener('click', () => {
-    if (confirm('Выйти из аккаунта?')) {
-      clearAuth();
-      toast('Вы вышли');
-    }
-  });
-  $('profileLogoutBtn').addEventListener('click', () => {
-    clearAuth();
-    toast('Вы вышли');
-  });
-
-  // Enter на полях логина
-  $('loginPassword').addEventListener('keydown', e => {
-    if (e.key === 'Enter') submitAuth();
-  });
-
-  // Автологин, если токен есть
-  if (state.token) {
-    updateAuthUI();
-  }
+  document.querySelectorAll('.role-card').forEach(c=>c.addEventListener('click',()=>{ document.querySelectorAll('.role-card').forEach(x=>x.classList.remove('selected')); c.classList.add('selected'); state.selectedRole = c.dataset.role; }));
+  $('themeBtn').addEventListener('click',toggleTheme);
+  $('submitBtn').addEventListener('click',submitAuth);
+  $('toggleModeBtn').addEventListener('click',toggleRegisterMode);
+  $('newOrderBtn').addEventListener('click',()=>{ showScreen('screen-new-order'); $('appTitle').textContent='Новый заказ'; });
+  $('backBtn').addEventListener('click',()=>{ showScreen('screen-customer'); $('appTitle').textContent='Моё дело'; });
+  $('createOrderBtn').addEventListener('click',createOrder);
+  $('refreshBtn').addEventListener('click',loadNearby);
+  $('logoutBtn').addEventListener('click',()=>{ if(confirm('Выйти?')){ clearAuth(); toast('Вы вышли'); } });
+  $('profileLogoutBtn').addEventListener('click',()=>{ clearAuth(); toast('Вы вышли'); });
+  $('loginPassword').addEventListener('keydown',e=>{ if(e.key==='Enter') submitAuth(); });
+  if(state.token) updateAuthUI();
 }
-
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>

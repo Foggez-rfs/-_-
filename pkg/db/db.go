@@ -26,22 +26,24 @@ getEnv("DB_PASSWORD", ""),
 )
 var err error
 DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-Logger: logger.Default.LogMode(logger.Warn),
+Logger: logger.Default.LogMode(logger.Silent),
 })
 if err != nil {
-log.Fatalf("Ошибка подключения к БД: %v", err)
+log.Fatalf("❌ Ошибка подключения к БД: %v", err)
 }
 sqlDB, _ := DB.DB()
 sqlDB.SetMaxOpenConns(20)
 sqlDB.SetMaxIdleConns(5)
 sqlDB.SetConnMaxLifetime(time.Hour)
 if err := sqlDB.Ping(); err != nil {
-log.Fatalf("БД не отвечает: %v", err)
+log.Fatalf("❌ БД не отвечает: %v", err)
 }
-log.Println("PostgreSQL подключена")
+log.Println("✅ PostgreSQL подключена")
 }
 
 func getEnv(k, fb string) string {
-if v := os.Getenv(k); v != "" { return v }
+if v := os.Getenv(k); v != "" {
+return v
+}
 return fb
 }

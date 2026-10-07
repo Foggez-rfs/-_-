@@ -1,21 +1,72 @@
-MIT License
+PROPRIETARY LICENSE
 
-Copyright (c) 2026 Foggez-rfs
+Copyright © 2026 Foggez-rfs
+All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Настоящая лицензия определяет условия использования программного обеспечения
+«Моё дело» (далее — «Программное обеспечение»).
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. ПРАВА АВТОРА
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Все исключительные права на Программное обеспечение, включая исходный код,
+дизайн, архитектуру, документацию и сопутствующие материалы, принадлежат
+автору — Foggez-rfs (далее — «Автор»). Авторство неотчуждаемо.
+
+2. РАЗРЕШЁННОЕ ИСПОЛЬЗОВАНИЕ
+
+2.1. Любое физическое лицо вправе:
+   - Скачать официальную сборку приложения из магазина RuStore
+     и использовать её по прямому назначению — для получения или оказания
+     бытовой помощи.
+   - Ознакомиться с исходным кодом в ознакомительных целях.
+
+3. ЗАПРЕЩЁННЫЕ ДЕЙСТВИЯ
+
+Без предварительного письменного разрешения Автора строго запрещается:
+
+3.1. Копировать, воспроизводить или распространять исходный код
+     Программного обеспечения в любой форме.
+
+3.2. Изменять, модифицировать, адаптировать, переводить или создавать
+     производные произведения на основе исходного кода.
+
+3.3. Продавать, перепродавать, сдавать в аренду, лицензировать или иным
+     способом извлекать коммерческую выгоду из исходного кода или
+     производных продуктов.
+
+3.4. Использовать название, логотип или бренд «Моё дело» без разрешения
+     Автора.
+
+3.5. Удалять или изменять уведомления об авторских правах.
+
+4. КОММЕРЧЕСКОЕ СОТРУДНИЧЕСТВО
+
+4.1. Любое коммерческое использование, партнёрство, инвестиции или передача
+     доли в проекте оформляются исключительно отдельным письменным
+     договором между Автором и заинтересованной стороной.
+
+4.2. Передача прав может осуществляться только путём предоставления доли
+     (акций) в проекте на условиях, согласованных с Автором.
+
+5. ОТКАЗ ОТ ГАРАНТИЙ
+
+ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ПРЕДОСТАВЛЯЕТСЯ «КАК ЕСТЬ», БЕЗ КАКИХ-ЛИБО
+ГАРАНТИЙ, ЯВНЫХ ИЛИ ПОДРАЗУМЕВАЕМЫХ. АВТОР НЕ ГАРАНТИРУЕТ БЕСПЕРЕБОЙНУЮ
+РАБОТУ, ОТСУТСТВИЕ ОШИБОК ИЛИ ПРИГОДНОСТЬ ДЛЯ КОНКРЕТНЫХ ЦЕЛЕЙ.
+
+6. ОГРАНИЧЕНИЕ ОТВЕТСТВЕННОСТИ
+
+НИ В КОЕМ СЛУЧАЕ АВТОР НЕ НЕСЁТ ОТВЕТСТВЕННОСТИ ЗА ЛЮБЫЕ ПРЯМЫЕ, КОСВЕННЫЕ,
+СЛУЧАЙНЫЕ ИЛИ КОСВЕННЫЕ УБЫТКИ, ВОЗНИКШИЕ В РЕЗУЛЬТАТЕ ИСПОЛЬЗОВАНИЯ
+ИЛИ НЕВОЗМОЖНОСТИ ИСПОЛЬЗОВАНИЯ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ.
+
+7. КОНТАКТЫ
+
+По вопросам лицензирования, коммерческого использования и партнёрства:
+   GitHub: https://github.com/Foggez-rfs
+
+8. ПРЕКРАЩЕНИЕ
+
+Нарушение любого пункта настоящей лицензии автоматически прекращает право
+использования Программным обеспечением. Все права, не предоставленные
+явно, сохраняются за Автором.

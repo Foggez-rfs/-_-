@@ -19,13 +19,17 @@ jwt.RegisteredClaims
 
 func secret() []byte {
 s := os.Getenv("JWT_SECRET")
-if s == "" { s = "default-secret-change-me" }
+if s == "" {
+s = "default-secret-change-me"
+}
 return []byte(s)
 }
 
 func ttl() time.Duration {
 h, _ := strconv.Atoi(os.Getenv("JWT_EXPIRES_HOURS"))
-if h <= 0 { h = 72 }
+if h <= 0 {
+h = 72
+}
 return time.Duration(h) * time.Hour
 }
 
