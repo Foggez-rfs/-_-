@@ -38,7 +38,7 @@ jobs:
         working-directory: mobile
         shell: pwsh
         run: |
-          flutter create --platforms=windows --org com.foggez --project_name moe_delo .
+          flutter create --platforms=windows --org com.foggez --project-name moe_delo .
 
       - name: Get dependencies
         working-directory: mobile
