@@ -70,7 +70,7 @@ res = append(res, item{Order: o, Distance: d})
 c.JSON(200, gin.H{"orders": res, "count": len(res), "radius": radius})
 }
 
-// MyOrders — заказы текущего пользователя
+// MyOrders — заказы текущего пользователя + имя исполнителя
 func MyOrders(c *gin.Context) {
 uid := c.GetUint("user_id")
 role := c.GetString("role")
@@ -84,7 +84,56 @@ q = q.Where("customer_id = ?", uid).Order("created_at desc")
 }
 q.Find(&orders)
 
-c.JSON(200, gin.H{"orders": orders, "count": len(orders)})
+// Собираем ID исполнителей и загружаем их имена одним запросом
+execIDs := map[uint]bool{}
+for _, o := range orders {
+if o.ExecutorID != nil {
+execIDs[*o.ExecutorID] = true
+}
+}
+
+type ExecutorInfo struct {
+ID        uint    `json:"id"`
+FirstName string  `json:"first_name"`
+Phone     string  `json:"phone"`
+Rating    float64 `json:"rating"`
+}
+execMap := map[uint]ExecutorInfo{}
+if len(execIDs) > 0 {
+ids := make([]uint, 0, len(execIDs))
+for id := range execIDs {
+ids = append(ids, id)
+}
+var execs []ExecutorInfo
+db.DB.Table("users").Select("id, first_name, phone, rating").
+Where("id IN ?", ids).Scan(&execs)
+for _, e := range execs {
+execMap[e.ID] = e
+}
+}
+
+// Формируем ответ с расширенной информацией
+type OrderWithExecutor struct {
+Order
+Executor *ExecutorInfo `json:"executor,omitempty"`
+Reviewed bool          `json:"reviewed"`
+}
+res := make([]OrderWithExecutor, 0, len(orders))
+for _, o := range orders {
+item := OrderWithExecutor{Order: o}
+if o.ExecutorID != nil {
+if info, ok := execMap[*o.ExecutorID]; ok {
+item.Executor = &info
+}
+}
+// Проверяем, есть ли отзыв
+var cnt int64
+db.DB.Table("reviews").Where("order_id = ?", o.ID).Count(&cnt)
+item.Reviewed = cnt > 0
+res = append(res, item)
+}
+
+c.JSON(200, gin.H{"orders": res, "count": len(res)})
 }
 
 // AcceptOrder — исполнитель принимает заказ

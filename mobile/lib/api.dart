@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'storage.dart';
 
+/// Результат вызова API
 class ApiResult {
   final bool ok;
   final dynamic data;
@@ -9,6 +10,7 @@ class ApiResult {
   ApiResult({required this.ok, this.data, this.error});
 }
 
+/// HTTP-клиент к бэкенду «Моё дело»
 class Api {
   static String? _baseUrl;
   static String? _token;
@@ -29,6 +31,7 @@ class Api {
   }
 
   static String? get baseUrl => _baseUrl;
+  static String? get token => _token;
 
   static Future<void> logout() async {
     _token = null;
@@ -40,24 +43,32 @@ class Api {
     if (_token != null) 'Authorization': 'Bearer $_token',
   };
 
+  // ---------- HTTP helpers ----------
   static Future<ApiResult> _post(String path, Map<String, dynamic> body) async {
-    if (_baseUrl == null) return ApiResult(ok: false, error: 'URL сервера не задан');
+    if (_baseUrl == null || _baseUrl!.isEmpty) {
+      return ApiResult(ok: false, error: 'URL сервера не задан');
+    }
     try {
-      final r = await http.post(Uri.parse('$_baseUrl$path'), headers: _h, body: jsonEncode(body))
+      final r = await http
+          .post(Uri.parse('$_baseUrl$path'),
+              headers: _h, body: jsonEncode(body))
           .timeout(const Duration(seconds: 15));
       return _handle(r);
-    } catch (e) {
+    } on Exception catch (e) {
       return ApiResult(ok: false, error: 'Нет связи: $e');
     }
   }
 
   static Future<ApiResult> _get(String path) async {
-    if (_baseUrl == null) return ApiResult(ok: false, error: 'URL сервера не задан');
+    if (_baseUrl == null || _baseUrl!.isEmpty) {
+      return ApiResult(ok: false, error: 'URL сервера не задан');
+    }
     try {
-      final r = await http.get(Uri.parse('$_baseUrl$path'), headers: _h)
+      final r = await http
+          .get(Uri.parse('$_baseUrl$path'), headers: _h)
           .timeout(const Duration(seconds: 15));
       return _handle(r);
-    } catch (e) {
+    } on Exception catch (e) {
       return ApiResult(ok: false, error: 'Нет связи: $e');
     }
   }
@@ -68,13 +79,15 @@ class Api {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResult(ok: true, data: data);
       }
-      final err = data is Map ? data['error']?.toString() : null;
+      final err =
+          data is Map ? data['error']?.toString() : null;
       return ApiResult(ok: false, error: err ?? 'Ошибка ${res.statusCode}');
     } catch (_) {
       return ApiResult(ok: false, error: 'Сервер вернул некорректный ответ');
     }
   }
 
+  // ---------- AUTH ----------
   static Future<ApiResult> register({
     required String phone,
     required String password,
@@ -82,7 +95,10 @@ class Api {
     required String firstName,
   }) async {
     final r = await _post('/auth/register', {
-      'phone': phone, 'password': password, 'role': role, 'first_name': firstName,
+      'phone': phone,
+      'password': password,
+      'role': role,
+      'first_name': firstName,
     });
     if (r.ok) {
       _token = r.data['token'];
@@ -97,7 +113,10 @@ class Api {
     required String phone,
     required String password,
   }) async {
-    final r = await _post('/auth/login', {'phone': phone, 'password': password});
+    final r = await _post('/auth/login', {
+      'phone': phone,
+      'password': password,
+    });
     if (r.ok) {
       _token = r.data['token'];
       await Storage.saveToken(r.data['token']);
@@ -107,21 +126,28 @@ class Api {
     return r;
   }
 
+  // ---------- ORDERS ----------
   static Future<ApiResult> createOrder({
     required String description,
     required String address,
     double lat = 55.75,
     double lon = 37.62,
-  }) => _post('/api/orders', {
-    'description': description, 'address': address, 'lat': lat, 'lon': lon,
-  });
+  }) =>
+      _post('/api/orders', {
+        'description': description,
+        'address': address,
+        'lat': lat,
+        'lon': lon,
+      });
 
   static Future<ApiResult> nearbyOrders({
     double lat = 55.75,
     double lon = 37.62,
     int radius = 5000,
-  }) => _get('/api/orders/nearby?lat=$lat&lon=$lon&radius=$radius');
+  }) =>
+      _get('/api/orders/nearby?lat=$lat&lon=$lon&radius=$radius');
 
+  /// Мои заказы — заказчик видит свои, исполнитель — принятые
   static Future<ApiResult> myOrders() => _get('/api/orders/my');
 
   static Future<ApiResult> acceptOrder(int id) =>
@@ -129,4 +155,21 @@ class Api {
 
   static Future<ApiResult> completeOrder(int id) =>
       _post('/api/orders/$id/complete', {});
+
+  /// Оценка работы исполнителя заказчиком
+  static Future<ApiResult> rateOrder({
+    required int orderId,
+    required int score,
+    String comment = '',
+  }) =>
+      _post('/api/orders/$orderId/rate', {
+        'score': score,
+        'comment': comment,
+      });
+
+  // ---------- DOCS ----------
+  /// Заглушка — загрузка документа (не реализована в UI)
+  static Future<ApiResult> uploadDocument() async {
+    return ApiResult(ok: false, error: 'Не реализовано');
+  }
 }
