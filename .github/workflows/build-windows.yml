@@ -1,0 +1,61 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/build-windows.yml'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.24.5'
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Generate Windows scaffolding
+        working-directory: mobile
+        run: |
+          flutter create --platforms=windows --org com.foggez --project-name moe_delo .
+
+      - name: Get dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Build Windows EXE
+        working-directory: mobile
+        run: flutter build windows --release
+
+      - name: Zip the build
+        working-directory: mobile
+        run: |
+          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath moe-delo-windows.zip
+        shell: pwsh
+
+      - name: Upload EXE as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: moe-delo-windows
+          path: mobile/moe-delo-windows.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: win-v1.0.${{ github.run_number }}
+          name: Windows EXE v1.0.${{ github.run_number }}
+          body: |
+            Windows-версия приложения «Моё дело».
+            Распакуйте архив и запустите `moe_delo.exe`.
+          files: mobile/moe-delo-windows.zip
+          draft: false
+          prerelease: false
